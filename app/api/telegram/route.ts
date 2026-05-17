@@ -3,18 +3,22 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { message, botToken, chatId } = body
+    const { message } = body
+    
+    // Read from env, fallback to body for backwards compatibility
+    const botToken = process.env.TELEGRAM_BOT_TOKEN || body.botToken
+    const chatId = process.env.TELEGRAM_CHAT_ID || body.chatId
 
     if (!botToken) {
       return NextResponse.json(
-        { success: false, error: 'Bot Token is required' },
+        { success: false, error: 'Bot Token is required. Please set TELEGRAM_BOT_TOKEN in .env.local' },
         { status: 400 }
       )
     }
 
     if (!chatId) {
       return NextResponse.json(
-        { success: false, error: 'Chat ID is required' },
+        { success: false, error: 'Chat ID is required. Please set TELEGRAM_CHAT_ID in .env.local' },
         { status: 400 }
       )
     }

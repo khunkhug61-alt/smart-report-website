@@ -55,8 +55,6 @@ export default function AdminPage() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [expandedImage, setExpandedImage] = useState<string | null>(null)
   const [showTelegramSettings, setShowTelegramSettings] = useState(false)
-  const [botToken, setBotToken] = useState(telegram.botToken)
-  const [chatId, setChatId] = useState(telegram.chatId)
   const [telegramTestStatus, setTelegramTestStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
 
   // Fetch reports from server on mount
@@ -94,7 +92,7 @@ export default function AdminPage() {
     const report = reports.find(r => r.id === reportId)
     updateReportStatus(reportId, newStatus)
     
-    if (report && telegram.enabled) {
+    if (report) {
       const statusText = {
         'pending': 'รอดำเนินการ',
         'in-progress': 'กำลังแก้ไข',
@@ -147,14 +145,6 @@ export default function AdminPage() {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-    })
-  }
-
-  const saveTelegramSettings = () => {
-    updateTelegramSettings({
-      botToken,
-      chatId,
-      enabled: botToken.length > 0 && chatId.length > 0,
     })
   }
 
@@ -265,11 +255,7 @@ export default function AdminPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setShowTelegramSettings(!showTelegramSettings)}
-            className={`inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors ${
-              telegram.enabled
-                ? 'border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100'
-                : 'border-border text-foreground hover:bg-accent'
-            }`}
+            className={`inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors border-border text-foreground hover:bg-accent`}
           >
             <Bell className="h-5 w-5" />
             Telegram
@@ -292,94 +278,39 @@ export default function AdminPage() {
               <Bell className="h-5 w-5 text-blue-500" />
               <h2 className="text-lg font-semibold text-foreground">ตั้งค่า Telegram Bot</h2>
             </div>
-            <a
-              href="https://t.me/BotFather"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-sm text-primary hover:underline"
-            >
-              สร้าง Bot <ExternalLink className="h-3 w-3" />
-            </a>
           </div>
           
           <div className="space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">
-                Bot Token
-              </label>
-              <input
-                type="text"
-                value={botToken}
-                onChange={(e) => setBotToken(e.target.value)}
-                placeholder="เช่น 123456789:ABCdefGHIjklMNOpqrSTUvwxYZ"
-                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">
-                Chat ID
-              </label>
-              <input
-                type="text"
-                value={chatId}
-                onChange={(e) => setChatId(e.target.value)}
-                placeholder="เช่น -1001234567890 หรือ @channelname"
-                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+            <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+              <div className="flex items-center gap-2 mb-2 font-semibold">
+                <CheckCircle2 className="h-4 w-4" />
+                ตั้งค่าผ่านระบบ Environment Variables แล้ว
+              </div>
+              <p>ระบบแจ้งเตือนผ่าน Telegram ถูกย้ายไปตั้งค่าในไฟล์ <code>.env.local</code> ของเซิร์ฟเวอร์ เพื่อความปลอดภัยและการใช้งานถาวรแล้วครับ ไม่จำเป็นต้องกรอกข้อมูลตรงนี้อีก</p>
             </div>
 
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={saveTelegramSettings}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                <Settings className="h-4 w-4" />
-                บันทึกการตั้งค่า
-              </button>
-              
-              {telegram.enabled && (
-                <button
-                  onClick={testTelegramNotify}
-                  disabled={telegramTestStatus === 'sending'}
-                  className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors ${
-                    telegramTestStatus === 'success'
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : telegramTestStatus === 'error'
-                      ? 'border-red-500 bg-red-50 text-red-700'
-                      : 'border-border text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <Send className="h-4 w-4" />
-                  {telegramTestStatus === 'sending'
-                    ? 'กำลังส่ง...'
-                    : telegramTestStatus === 'success'
-                    ? 'ส่งสำเร็จ!'
+                onClick={testTelegramNotify}
+                disabled={telegramTestStatus === 'sending'}
+                className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors ${
+                  telegramTestStatus === 'success'
+                    ? 'border-green-500 bg-green-50 text-green-700'
                     : telegramTestStatus === 'error'
-                    ? 'ส่งไม่สำเร็จ'
-                    : 'ทดสอบส่งข้อความ'}
-                </button>
-              )}
+                    ? 'border-red-500 bg-red-50 text-red-700'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                }`}
+              >
+                <Send className="h-4 w-4" />
+                {telegramTestStatus === 'sending'
+                  ? 'กำลังส่ง...'
+                  : telegramTestStatus === 'success'
+                  ? 'ส่งสำเร็จ!'
+                  : telegramTestStatus === 'error'
+                  ? 'ส่งไม่สำเร็จ'
+                  : 'ทดสอบส่งข้อความ'}
+              </button>
             </div>
-
-            <div className="rounded-lg bg-muted p-4 text-sm">
-              <p className="mb-2 font-medium text-foreground">วิธีตั้งค่า Telegram Bot:</p>
-              <ol className="list-inside list-decimal space-y-1 text-muted-foreground">
-                <li>เปิด Telegram แล้วค้นหา <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@BotFather</a></li>
-                <li>พิมพ์ /newbot แล้วตั้งชื่อ Bot</li>
-                <li>คัดลอก Bot Token มาวางในช่องด้านบน</li>
-                <li>สร้างกลุ่มหรือ Channel แล้วเพิ่ม Bot เข้าไป</li>
-                <li>ค้นหา <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@userinfobot</a> หรือ <a href="https://t.me/getmyid_bot" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@getmyid_bot</a> เพื่อหา Chat ID</li>
-                <li>วาง Chat ID ในช่องด้านบน (ถ้าเป็นกลุ่มจะขึ้นต้นด้วย -)</li>
-              </ol>
-            </div>
-
-            {telegram.enabled && (
-              <div className="flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>เปิดใช้งาน Telegram Bot แล้ว - จะแจ้งเตือนเมื่อมีปัญหาใหม่</span>
-              </div>
-            )}
           </div>
         </div>
       )}

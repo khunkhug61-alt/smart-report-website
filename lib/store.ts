@@ -307,13 +307,9 @@ export const useReportStore = create<ReportStore>()(
       },
 
       sendTelegramNotify: async (message, imageData) => {
-        const { telegram } = get()
-        if (!telegram.enabled || !telegram.botToken || !telegram.chatId) {
-          return false
-        }
-
         try {
-          const payload: any = { message, botToken: telegram.botToken, chatId: telegram.chatId }
+          // Send request to API, which will use the environment variables
+          const payload: any = { message }
           if (imageData) payload.image = imageData
           const response = await fetch('/api/telegram', {
             method: 'POST',
